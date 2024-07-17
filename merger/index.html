@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITCON CAMP - 把蒐集到的 QRCode 拼起來！</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a90e2;
+        }
+        .content {
+            display: flex;
+            gap: 30px;
+        }
+        .upload-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .upload-box {
+            border: 2px dashed #4a4a4a;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .upload-box:hover {
+            border-color: #4a90e2;
+        }
+        .upload-box input {
+            display: none;
+        }
+        .upload-box label {
+            cursor: pointer;
+            display: block;
+            padding: 10px;
+            background-color: #3a3a3a;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .upload-box label:hover {
+            background-color: #4a4a4a;
+        }
+        #result-container {
+            flex: 1;
+        }
+        #result-canvas {
+            max-width: 100%;
+            border: 1px solid #4a4a4a;
+            border-radius: 10px;
+        }
+        #mergeButton {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+        #mergeButton:hover {
+            background-color: #3a80d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>把蒐集到的 QRCode 拼接起來！</h1>
+        <div class="content">
+            <div class="upload-container">
+                <div class="upload-box">
+                    <input type="file" id="image1" accept="image/*">
+                    <label for="image1">上傳碎片 1</label>
+                </div>
+                <div class="upload-box">
+                    <input type="file" id="image2" accept="image/*">
+                    <label for="image2">上傳碎片 2</label>
+                </div>
+                <div class="upload-box">
+                    <input type="file" id="image3" accept="image/*">
+                    <label for="image3">上傳碎片 3</label>
+                </div>
+                <div class="upload-box">
+                    <input type="file" id="image4" accept="image/*">
+                    <label for="image4">上傳碎片 4</label>
+                </div>
+            </div>
+            <div id="result-container">
+                <canvas id="result-canvas"></canvas>
+            </div>
+        </div>
+        <button id="mergeButton">結合！</button>
+    </div>
+
+    <script>
+        const inputIds = ['image1', 'image2', 'image3', 'image4'];
+        const images = {};
+
+        inputIds.forEach(id => {
+            document.getElementById(id).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        images[id] = img;
+                        document.querySelector(`label[for="${id}"]`).textContent = '成功上傳';
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+
+        document.getElementById('mergeButton').addEventListener('click', function() {
+            const canvas = document.getElementById('result-canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 200; // Size of each image in the grid
+            canvas.width = size * 2;
+            canvas.height = size * 2;
+
+            let positions = [
+                [0, 0],
+                [size, 0],
+                [0, size],
+                [size, size]
+            ];
+
+            inputIds.forEach((id, index) => {
+                if (images[id]) {
+                    ctx.drawImage(images[id], positions[index][0], positions[index][1], size, size);
+                } else {
+                    ctx.fillStyle = '#3a3a3a';
+                    ctx.fillRect(positions[index][0], positions[index][1], size, size);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '16px Arial';
+                    ctx.fillText('你好像沒上傳...', positions[index][0] + 10, positions[index][1] + 30);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
